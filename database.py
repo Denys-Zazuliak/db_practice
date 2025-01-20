@@ -1,9 +1,9 @@
 import sqlite3
 
-#from faker import Faker
-#import random
+from faker import Faker
+import random
 
-#fake = Faker('en_GB')
+fake = Faker('en_GB')
 
 #conn=sqlite3.connect('student.sqlite')
 
@@ -44,6 +44,20 @@ with sqlite3.connect('database.db') as conn:
 #        age=random.randint(16,17)
 #        gender=random.choice(('M','F'))
 #        cursor.execute(parameterised_insert_query,(f_name,l_name,age,gender))
+
+#    data=[(fake.first_name(),
+#           fake.last_name(),
+#           random.randint(16,17),
+#           random.choice(('M','F')))
+#          for _ in range(5)]
+#    cursor.executemany(parameterised_insert_query, data)
+
+    update_query="""
+    UPDATE students
+    SET lastname = ?
+    WHERE id = 4;
+    """
+    cursor.execute(update_query, ('Smith',))
 
     conn.commit()
 
