@@ -52,12 +52,20 @@ with sqlite3.connect('database.db') as conn:
 #          for _ in range(5)]
 #    cursor.executemany(parameterised_insert_query, data)
 
-    update_query="""
+#    update_query="""
+#    UPDATE students
+#    SET lastname = ?
+#    WHERE id = 4;
+#    """
+#    cursor.execute(update_query, ('Smith',))
+
+    increment_age_query="""
     UPDATE students
-    SET lastname = ?
-    WHERE id = 4;
+    SET age=age+1;
     """
-    cursor.execute(update_query, ('Smith',))
+    cursor.execute(increment_age_query)
+
+
 
     conn.commit()
 
