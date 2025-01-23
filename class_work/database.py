@@ -7,7 +7,7 @@ fake = Faker('en_GB')
 
 #conn=sqlite3.connect('student.sqlite')
 
-with sqlite3.connect('database.db') as conn:
+with sqlite3.connect('../database.db') as conn:
     cursor=conn.cursor()
 
 #    create_students_table="""
@@ -64,8 +64,6 @@ with sqlite3.connect('database.db') as conn:
     SET age=age+1;
     """
     cursor.execute(increment_age_query)
-
-
 
     conn.commit()
 
