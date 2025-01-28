@@ -10,15 +10,16 @@ def execute_read_query(connection, query):
         print(f"The error {e} occurred")
     return result
 
-select_post_likes = """
-SELECT description as Post, COUNT(likes.id) as Likes
-FROM likes, posts
-WHERE posts.id = likes.post_id
-GROUP BY likes.post_id
-"""
+with sqlite3.connect('..\..\sm_app.sqlite') as connection:
 
-post_likes = execute_read_query(connection, select_post_likes)
+    select_post_likes = """
+    SELECT description as Post, COUNT(likes.id) as Likes
+    FROM likes, posts
+    WHERE posts.id = likes.post_id
+    GROUP BY likes.post_id
+    """
+
+    post_likes = execute_read_query(connection, select_post_likes)
 
 for post_like in post_likes:
-
-print(post_like)
+    print(post_like)
