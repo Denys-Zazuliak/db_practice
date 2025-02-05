@@ -19,8 +19,9 @@ class Activity(Base):
     id: so.Mapped[int] = so.mapped_column(primary_key=True,autoincrement=True)
     name: so.Mapped[str] = so.mapped_column(unique=True)
     attendees: so.Mapped[list["Person"]] = so.relationship("Person", secondary=person_activities, order_by="(Person.last_name, Person.first_name)",back_populates="activities")
-    location_id: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('locations.id'))
-    location: so.Mapped[Location] = so.relationship(back_populates="activities")
+    location_id: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey("locations.id"))
+    location: so.Mapped[Optional["Location"]] = so.relationship("Location", back_populates="activities")
+
     def __repr__(self) -> str:
         return f"Activity(name='{self.name}')"
 
@@ -31,14 +32,14 @@ class Person(Base):
     last_name: so.Mapped[str]
     activities: so.Mapped [list[Activity]] = so.relationship("Activity", secondary=person_activities, order_by=Activity.name,back_populates="attendees")
 
-class Location(Base):
-    __tablename__ = 'locations'
-    id: so.Mapped[int] = so.mapped_column(primary_key=True,autoincrement=True)
-    room: so.Mapped[str]
-    activities: so.Mapped[list["Activity"]] = so.relationship(back_populates="location")
-
-    def __repr__(self) -> str:
-        return f'Person({self.first_name} {self.last_name})'
-
     def greeting(self) -> None:
         print(f"{self.first_name} says 'Hello'")
+
+class Location(Base):
+    __tablename__ = "locations"
+    id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
+    room: so.Mapped[str] = so.mapped_column(unique=True)
+    activities: so.Mapped[list["Activity"]] = so.relationship("Activity", back_populates="location")
+
+    def __repr__(self) -> str:
+        return f"Location(room='{self.room}')"
