@@ -15,13 +15,14 @@ likes = sa.Table("likes",
 
 class User(Base):
     __tablename__ = 'users'
-    id: so.Mapped[int] = so.mapped_column(primary_key=True,autoincrement=True)
-    name: so.Mapped[Optional[str]]
-    age: so.Mapped[Optional[int]]
-    gender: so.Mapped[Optional[str]]
-    nationality: so.Mapped[Optional[str]]
-    posts: so.Mapped[list[posts]] = so.relationship("Post", secondary=likes)
-    liked_posts: so.Mapped[list[posts]] = so.relationship("Liked_Post", secondary=likes)
+    id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
+    name: so.Mapped[str] = so.mapped_column(unique=True)
+    age: so.Mapped[int|None]
+    gender: so.Mapped[str|None]
+    nationality: so.Mapped[str|None]
+    posts: so.Mapped[list['Post']] = so.relationship(back_populates='user')
+    liked_posts: so.Mapped[list['Post']] = so.relationship(secondary=likes, back_populates='liked_by_users')
+    comments_made: so.Mapped[list['Comment']] = so.relationship(back_populates='user')
 
     def __repr__(self) -> str:
         return f"User(name='{self.name}')"
@@ -31,9 +32,22 @@ class Post(Base):
     id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
     title: so.Mapped[str]
     description: so.Mapped[str]
-    user: so.Mapped[list[User]] = so.relationship("User", secondary=User)
-    liked_by_users: so.Mapped[list[User]] = so.relationship("User", secondary=likes, order_by="User.id")
-    #comments: so.Mapped[str]
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('users.id'))
+    user: so.Mapped["User"] = so.relationship(back_populates='posts')
+    liked_by_users: so.Mapped[list["User"]] = so.relationship(secondary=likes, back_populates='liked_posts')
+    comments: so.Mapped[list["Comment"]] = so.relationship(back_populates='post')
 
     def __repr__(self) -> str:
         return f"Post(title='{self.title}')"
+
+class Comment(Base):
+    __tablename__ = 'comments'
+    id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('users.id'))
+    post_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('posts.id'))
+    comment: so.Mapped[str]
+    post: so.Mapped['Post'] = so.relationship(back_populates='comments')
+    user: so.Mapped['User'] = so.relationship(back_populates='comments_made')
+
+    def __repr__(self):
+        return f"Comment(user_id={self.user_id}, post_id={self.post_id}, comment='{self.comment}')"
