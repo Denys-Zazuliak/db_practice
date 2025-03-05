@@ -37,15 +37,22 @@ class Controller:
                           for post in user.posts]
         return posts_info
 
-    def get_comments(self, user_name: str) -> list[dict]:
+    def create_post(self, user_name: str, title: str, description: str, ) -> Post:
         with so.Session(bind=self.engine) as session:
-            post = session.scalars(sa.select(Post).where(User.name == user_name)).one_or_none()
+            post = Post(title=title, description=description, user_id=self.current_user.id)
+            session.add(post)
+            session.commit()
+        return post
+
+    def get_comments(self, post_id: str) -> list[dict]:
+        with so.Session(bind=self.engine) as session:
+            post = session.scalars(sa.select(Post).where(Post.id == post_id)).one_or_none()
             comments_info = [{'id': comment.id,
-                           'user': comment.title,
-                           'description': comment.description,
-                           'number_likes': len(comment.liked_by_users),
+                           'user_id': comment.user_id,
+                           'post_id': comment.post_id,
+                           'comment': comment.comment,
                            }
-                          for comment in post.comments]
+                           for comment in post.comments]
         return comments_info
 
 
@@ -96,7 +103,7 @@ class CLI:
         self.show_posts(self.controller.current_user.name)
 
         menu_items = {'Show posts from another user': self.show_posts,
-                      'View comments under a post': self.show_comments,
+                      'Create a post': self.create_post,
                       'Logout': self.login,
                       }
 
@@ -124,16 +131,25 @@ class CLI:
             print(f'Content: {post["description"]}')
             print(f'Likes: {post["number_likes"]}')
 
-            self.show_comments(posts)
+            self.show_comments(post)
 
         if not posts:
             print('No Posts')
 
+    def create_post(self):
+        user_name = self.controller.current_user.name
 
-    def show_comments(self, posts):
-        for post in posts:
-            id=post['id']
-            print()
+        title = pyip.inputStr('Title: ')
+        desctiption = pyip.inputStr('Description: ')
+
+        self.controller.create_post(user_name, title, desctiption)
+
+
+    def show_comments(self, post):
+        id=post['id']
+        comments=self.controller.get_comments(id)
+        for comment in comments:
+            print(f'Comment: {comment["comment"]}')
 
 cli = CLI()
 controller = Controller()
