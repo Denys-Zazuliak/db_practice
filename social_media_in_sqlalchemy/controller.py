@@ -87,7 +87,8 @@ class Controller:
 
     def like(self, post_id):
         with so.Session(bind=self.engine) as session:
-            likes.append(post_id, self.current_user.id)
+            self.current_user
+            users[1].liked_posts.append(posts[0])
 
 class CLI:
     def __init__(self):
