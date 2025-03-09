@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from model import User, Post, Comment
+from model import User, Post, Comment, likes
 import pyinputplus as pyip
 
 
@@ -37,12 +37,35 @@ class Controller:
                           for post in user.posts]
         return posts_info
 
-    def create_post(self, user_name: str, title: str, description: str, ) -> Post:
+    def create_post(self, title: str, description: str, ) -> Post:
         with so.Session(bind=self.engine) as session:
             post = Post(title=title, description=description, user_id=self.current_user.id)
             session.add(post)
             session.commit()
         return post
+
+    def choose_post(self):
+        users = self.controller.get_user_names()
+
+        user_name = pyip.inputMenu(users,
+                                   prompt="Select a user:\n",
+                                   numbered=True,
+                                   )
+
+        self.show_title(f"{user_name}'s Posts")
+
+        posts = self.controller.get_posts(user_name)
+
+        post_options = [f"{post['title']} (Likes: {post['number_likes']})" for post in posts]
+        post_ids = [post["id"] for post in posts]
+
+        post_index = pyip.inputMenu(post_options,
+                                    prompt="Select a post:\n",
+                                    numbered=True,
+                                    )
+        post_id = post_ids[post_options.index(post_index)]
+
+        return post_id
 
     def get_comments(self, post_id: str) -> list[dict]:
         with so.Session(bind=self.engine) as session:
@@ -55,6 +78,16 @@ class Controller:
                            for comment in post.comments]
         return comments_info
 
+    def create_comment(self, post_id, comment):
+        with so.Session(bind=self.engine) as session:
+            comment = Comment(user_id=self.current_user.id, post_id=post_id, comment=comment)
+            session.add(comment)
+            session.commit()
+        return comment
+
+    def like(self, post_id):
+        with so.Session(bind=self.engine) as session:
+            likes.append(post_id, self.current_user.id)
 
 class CLI:
     def __init__(self):
@@ -104,6 +137,7 @@ class CLI:
 
         menu_items = {'Show posts from another user': self.show_posts,
                       'Create a post': self.create_post,
+                      'Create a comment': self.create_comments,
                       'Logout': self.login,
                       }
 
@@ -140,16 +174,25 @@ class CLI:
         user_name = self.controller.current_user.name
 
         title = pyip.inputStr('Title: ')
-        desctiption = pyip.inputStr('Description: ')
+        description = pyip.inputStr('Description: ')
 
-        self.controller.create_post(user_name, title, desctiption)
+        self.controller.create_post(user_name, title, description)
 
 
     def show_comments(self, post):
-        id=post['id']
-        comments=self.controller.get_comments(id)
+        comments=self.controller.get_comments(post['id'])
         for comment in comments:
             print(f'Comment: {comment["comment"]}')
+
+    def create_comments(self):
+        post_id = self.controller.choose_post()
+        comment = input("Enter your comment: ").strip()
+
+        self.controller.create_comment(post_id, comment)
+
+    def likes(self):
+        post_id = self.controller.choose_post()
+        self.controller.like(post_id)
 
 cli = CLI()
 controller = Controller()
