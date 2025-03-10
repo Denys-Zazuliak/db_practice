@@ -17,9 +17,9 @@ class User(Base):
     __tablename__ = 'users'
     id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
     name: so.Mapped[str] = so.mapped_column(unique=True)
-    age: so.Mapped[int]=None
-    gender: so.Mapped[str]=None
-    nationality: so.Mapped[str]=None
+    age: so.Mapped[int]
+    gender: so.Mapped[str|None]
+    nationality: so.Mapped[str|None]
     posts: so.Mapped[list['Post']] = so.relationship(back_populates='user')
     liked_posts: so.Mapped[list['Post']] = so.relationship(secondary=likes, back_populates='liked_by_users')
     comments_made: so.Mapped[list['Comment']] = so.relationship(back_populates='user')
