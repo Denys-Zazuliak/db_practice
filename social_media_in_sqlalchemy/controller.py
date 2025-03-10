@@ -45,16 +45,16 @@ class Controller:
         return post
 
     def choose_post(self):
-        users = self.controller.get_user_names()
+        users = self.get_user_names()
 
         user_name = pyip.inputMenu(users,
                                    prompt="Select a user:\n",
                                    numbered=True,
                                    )
 
-        self.show_title(f"{user_name}'s Posts")
+        print((f"{user_name}'s Posts")
 
-        posts = self.controller.get_posts(user_name)
+        posts = self.get_posts(user_name)
 
         post_options = [f"{post['title']} (Likes: {post['number_likes']})" for post in posts]
         post_ids = [post["id"] for post in posts]
@@ -87,8 +87,8 @@ class Controller:
 
     def like(self, post_id):
         with so.Session(bind=self.engine) as session:
-            self.current_user
-            users[1].liked_posts.append(posts[0])
+            self.current_user.liked_posts.append(post_id)
+            session.commit()
 
 class CLI:
     def __init__(self):
@@ -139,6 +139,7 @@ class CLI:
         menu_items = {'Show posts from another user': self.show_posts,
                       'Create a post': self.create_post,
                       'Create a comment': self.create_comments,
+                      'Like the post': self.likes,
                       'Logout': self.login,
                       }
 
