@@ -8,7 +8,7 @@ from social_media_in_sqlalchemy.write_to_social_media import session
 
 test_db_location='sqlite:///test.db'
 
-def test_test()
+def test_test():
     assert 3**2==9
 
 class TestDataBase:
@@ -28,6 +28,11 @@ class TestDataBase:
         db_session.commit()
         qry=sa.select([User]).where(User.name=='Rayhan')
         rayhan=db_session.scalar(qry)
+        assert rayhan is not None
+        assert rayhan.name == 'Rayhan'
+        assert rayhan.age == 16
+        assert rayhan.gender == 'male'
+        assert rayhan.nationality is None
 
 
 
