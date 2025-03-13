@@ -26,6 +26,7 @@ class TestDataBase:
         db_session.commit()
         qry=sa.select(User).where(User.name == 'Rayhan')
         rayhan=db_session.scalar(qry)
+        print(rayhan.id)
         assert rayhan is not None
         assert rayhan.name == 'Rayhan'
         assert rayhan.age == 16
@@ -47,3 +48,19 @@ class TestDataBase:
         pycharm_disaster=db_session.scalar(qry)
         assert pycharm_disaster.title == 'Pycharm disaster'
         assert pycharm_disaster.description == 'raycho0809, FuzzyGhost551'
+        db_session.rollback()
+
+    def test_comment(self, db_session):
+        comment=Comment(user_id=1, post_id=6, comment='among us')
+        db_session.add(comment)
+        db_session.commit()
+        qry=sa.select(Comment).where(Comment.user_id == 1)
+        among_us= db_session.scalar(qry)
+        assert among_us.comment == 'among us'
+        assert among_us.user_id == 1
+        assert among_us.post_id == 6
+        db_session.rollback()
+
+    def test_likes(self, db_session):
+        pass
+
