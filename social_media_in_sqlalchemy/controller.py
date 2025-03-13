@@ -1,8 +1,8 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from model import User, Post, Comment, likes
 import pyinputplus as pyip
 
+from social_media_in_sqlalchemy.model import User, Post, Comment, likes
 
 class Controller:
     def __init__(self, db_location='sqlite:///social_media.db'):
@@ -90,8 +90,13 @@ class Controller:
         with so.Session(bind=self.engine) as session:
             post = session.scalars(sa.select(Post).where(Post.id == post_id)).one_or_none()
             user=self.current_user
-            user.liked_posts.append(post)
-            session.commit()
+            if post and user not in post.liked_by_users:
+                post.liked_by_users.append(user)
+                session.commit()
+            else:
+                post.liked_by_users.remove(user)
+                session.commit()
+
 
 class CLI:
     def __init__(self):
@@ -199,5 +204,6 @@ class CLI:
         post_id=self.controller.choose_post()
         self.controller.like(post_id)
 
-cli = CLI()
-controller = Controller()
+if __name__ == '__main__':
+    cli = CLI()
+    controller = Controller()

@@ -1,11 +1,17 @@
+from os import write
+
 import pytest
 import sqlalchemy as sa
 import sqlalchemy.orm as so
-from model import Base, User, Post, Comment, likes
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-test_db_location='sqlite:///test_database_new.db'
+from social_media_in_sqlalchemy.write_to_social_media import write_initial_data
+from social_media_in_sqlalchemy.controller import Controller
+from social_media_in_sqlalchemy.model import Base, User, Post, Comment, likes
+
+
+test_db_location='sqlite:///test_database.db'
 
 def test_test():
     assert 3**2==9
@@ -64,3 +70,50 @@ class TestDataBase:
     def test_likes(self, db_session):
         pass
 
+class TestController:
+    @pytest.fixture(scope='class', autouse=True)
+    def test_db(self):
+        engine = sa.create_engine(test_db_location)
+        Base.metadata.create_all(engine)
+        write_initial_data(engine)
+        yield
+        # After the fixture is used drop the data from the database
+        Base.metadata.drop_all(engine)
+
+    @pytest.fixture(scope='class')
+    def controller(self):
+        control = Controller(db_location=test_db_location)
+        return control
+
+    def test_set_current_user_from_name(self, controller):
+        controller.set_current_user_from_name('Alice')
+        assert controller.current_user.name == 'Alice'
+        assert controller.current_user.id == 1
+        assert controller.current_user.age == 30
+
+    def test_get_user_names(self):
+        mylist=controller.get_user_names()
+        assert mylist[0] == 'Alice'
+        assert len(mylist) == 4
+
+    def test_create_user(self):
+        user=controller.create_user(name='KSI', age=100, gender='male', nationality='British')
+        assert user.name == 'KSI'
+        assert user.age == 100
+        assert user.gender == 'male'
+        assert user.nationality == 'British'
+
+    def test_get_posts(self):
+        posts=controller.get_posts()
+        assert posts[0]['title'] == 'Exploring the Rocky Mountains'
+        assert posts[1]['description'] == 'Sharing some of my favorite recipes, including a delicious chocolate cake and a savory lasagna.'
+
+
+    def test_create_post(self):
+        assert False
+
+    def test_choose_post(self):
+        assert False
+
+    def test_get_comments(self):
+        assert False
